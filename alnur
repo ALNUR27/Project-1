@@ -1,0 +1,68 @@
+# Импорт необходимых библиотек
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 📌 Шаг 1: Загрузка и исследование данных
+df = pd.read_csv('daily-min-temperatures.csv')
+print(df.head())
+
+# 📌 Шаг 2: Парсинг дат и установка временного индекса
+df['Date'] = pd.to_datetime(df['Date'])  # Преобразуем строки в даты
+df.set_index('Date', inplace=True)  # Устанавливаем временной индекс
+df.rename(columns={'Temp': 'Temperature'}, inplace=True)  # Переименовываем столбец
+print(df.head())
+
+# 📌 Шаг 3: Построение базового графика
+plt.figure(figsize=(14, 6))
+plt.plot(df['Temperature'], color='tab:blue')
+plt.title('Daily Minimum Temperature in Melbourne (1981-1990)')
+plt.xlabel('Дата')
+plt.ylabel('Температура (°C)')
+plt.grid(True)
+plt.show()
+
+# 📌 Шаг 4: Анализ данных за конкретный год (1981)
+df_1981 = df[df.index.year == 1983]
+df_1981['Temperature'].plot(figsize=(12,5), title='Температура в 1983 году', color='darkorange')
+plt.ylabel("Температура (°C)")
+plt.grid(True)
+plt.show()
+
+# 📌 Шаг 5: Скользящее среднее (30 дней)
+df['RollingMean_30'] = df['Temperature'].rolling(window=30).mean()
+df[['Temperature', 'RollingMean_30']].plot(figsize=(14,6), title='Температура и 30-дневное скользящее среднее')
+plt.grid(True)
+plt.show()
+
+# 📌 Шаг 6: Ресемплирование (средние значения по месяцам и годам)
+monthly_avg = df['Temperature'].resample('M').mean()
+yearly_avg = df['Temperature'].resample('Y').mean()
+
+plt.figure(figsize=(14,5))
+monthly_avg.plot(label='Средняя температура по месяцам')
+yearly_avg.plot(label='Средняя температура по годам')
+plt.title("Среднемесячная и среднегодовая температура")
+plt.ylabel("Температура (°C)")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# 📌 Шаг 7: Определение самых жарких и холодных дней
+hottest = df['Temperature'].idxmax()
+coldest = df['Temperature'].idxmin()
+
+print("Самый жаркий день:", hottest, "Температура:", df.loc[hottest, 'Temperature'])
+print("Самый холодный день:", coldest, "Температура:", df.loc[coldest, 'Temperature'])
+
+# 📌 Дополнительный анализ: Гистограмма и ящичная диаграмма
+sns.histplot(df['Temperature'], bins=30, kde=True, color='skyblue')
+plt.title("Гистограмма температуры")
+plt.xlabel("Температура (°C)")
+plt.grid(True)
+plt.show()
+
+sns.boxplot(x=df['Temperature'], color='lightgreen')
+plt.title("Ящичная диаграмма температуры")
+plt.xlabel("Температура (°C)")
+plt.show()
